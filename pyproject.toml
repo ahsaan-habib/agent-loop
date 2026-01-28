@@ -13,3 +13,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["agent*"]
+
+[project.optional-dependencies]
+docs = ["rag-grounded @ git+https://github.com/ahsaan-habib/rag-grounded.git"]
+
+[project.scripts]
+agent = "agent.cli:main"

@@ -1,0 +1,8 @@
+{
+  "A-1001": {"customer": "Maria Lindqvist", "email": "maria@example.com", "plan": "Team (annual)",
+             "status": "active", "amount_eur": 588.0, "created": "2025-11-02", "notes": []},
+  "A-1002": {"customer": "Tomás Ortega", "email": "tomas@example.com", "plan": "Pro (monthly)",
+             "status": "active", "amount_eur": 29.0, "created": "2026-01-14", "notes": []},
+  "A-1003": {"customer": "Acme Oy", "email": "billing@acme.example", "plan": "Team (monthly)",
+             "status": "past_due", "amount_eur": 59.0, "created": "2025-09-21", "notes": ["card declined 2026-01-05"]}
+}
