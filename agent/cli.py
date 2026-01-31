@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 
 from .loop import run
-from .toolbox.docs import search
+from .toolbox.docs import search_docs
 from .toolbox.orders import lookup_order
 from .tools import Registry
 from .trace import RUNS, render
@@ -21,7 +21,7 @@ def main() -> None:
     args = ap.parse_args()
 
     if args.cmd == "run":
-        trace = run(args.goal, Registry(search, lookup_order), max_steps=args.max_steps)
+        trace = run(args.goal, Registry(search_docs, lookup_order), max_steps=args.max_steps)
         print(trace.answer)
         print(f"\n[{trace.outcome} · {len(trace.steps)} steps · {trace.tokens:,} tok · run {trace.run_id}]")
     else:
