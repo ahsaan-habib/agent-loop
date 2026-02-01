@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 
+from .context import trim
 from .model import Model
 from .tools import Registry
 from .trace import RunTrace, Step, summarise_observation
@@ -24,6 +25,7 @@ def run(goal: str, tools: Registry, model: Model | None = None, max_steps: int =
     messages = [SYSTEM, {"role": "user", "content": goal}]
     seen: set[str] = set()
     for n in range(1, max_steps + 1):
+        messages = trim(messages)
         reply = model.chat(messages, tools=tools.schemas())          # THINK
         step = Step(n, reply.input_tokens, reply.output_tokens)
         trace.steps.append(step)
