@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 
-from .context import trim
+from .context import compact
 from .model import Model
 from .tools import Registry
 from .trace import RunTrace, Step, summarise_observation
@@ -25,9 +25,9 @@ def run(goal: str, tools: Registry, model: Model | None = None, max_steps: int =
     messages = [SYSTEM, {"role": "user", "content": goal}]
     seen: set[str] = set()
     for n in range(1, max_steps + 1):
-        messages = trim(messages)
+        messages, compacted = compact(messages, model)
         reply = model.chat(messages, tools=tools.schemas())          # THINK
-        step = Step(n, reply.input_tokens, reply.output_tokens)
+        step = Step(n, reply.input_tokens, reply.output_tokens, note="context compacted" if compacted else "")
         trace.steps.append(step)
         messages.append(reply.as_message())
         if not reply.tool_calls:                                     # STOP?
