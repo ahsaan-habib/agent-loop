@@ -13,6 +13,8 @@ import typing
 from dataclasses import dataclass
 from typing import Any, Callable, Literal
 
+from pydantic import ValidationError, validate_call
+
 _JSON = {str: "string", int: "integer", float: "number", bool: "boolean", list: "array", dict: "object"}
 
 
@@ -50,8 +52,19 @@ class Tool:
     fn: Callable[..., Any]
     schema: dict
 
+    def __post_init__(self):
+        self._validated = validate_call(self.fn)
+
     def __call__(self, **kw):
-        return self.fn(**kw)
+        """Never raises into the loop: a bad call becomes an observation the
+        model can read and recover from. A silent drop it would just repeat."""
+        try:
+            return self._validated(**kw)
+        except ValidationError as e:
+            problems = "; ".join(f"{'.'.join(map(str, err['loc']))}: {err['msg']}" for err in e.errors())
+            return {"error": f"invalid arguments for {self.name}: {problems}"}
+        except Exception as e:  # the tool itself failed
+            return {"error": f"{self.name} failed: {type(e).__name__}: {e}"}
 
 
 def tool(fn: Callable[..., Any]) -> Tool:
@@ -75,5 +88,8 @@ class Registry:
     def schemas(self) -> list[dict]:
         return [t.schema for t in self.tools.values()]
 
-    def __getitem__(self, name: str) -> Tool:
-        return self.tools[name]
+    def call(self, name: str, arguments: dict):
+        tool = self.tools.get(name)
+        if tool is None:   # tool hallucination: allowlist, answered as an observation
+            return {"error": f"there is no tool called {name!r}. Available: {', '.join(self.tools)}"}
+        return tool(**arguments)

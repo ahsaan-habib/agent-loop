@@ -42,9 +42,9 @@ def run(goal: str, tools: Registry, model: Model | None = None, max_steps: int =
                 step.note = f"repetition guard: {call.name} with identical arguments"
                 break
             seen.add(signature)
-            result = tools[call.name](**call.arguments)
+            result = tools.call(call.name, call.arguments)
             step.calls.append({"name": call.name, "arguments": call.arguments,
                                "observation": summarise_observation(result)})
-            messages.append({"role": "tool", "content": serialise(result)})   # OBSERVE
+            messages.append({"role": "tool", "tool_name": call.name, "content": serialise(result)})  # OBSERVE
     trace.finish("step_budget", "Could not finish within the step budget.")  # GIVE UP
     return trace
