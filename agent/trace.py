@@ -29,6 +29,7 @@ class RunTrace:
     outcome: str = ""
     answer: str = ""
     seconds: float = 0.0
+    cost_usd: float = 0.0
 
     @property
     def tokens(self) -> int:
@@ -64,5 +65,6 @@ def render(path: Path) -> str:
         if s.get("note"):
             out.append(f"{'':>17}^^ {s['note']}")
     total = sum(s["input_tokens"] + s["output_tokens"] for s in t["steps"])
-    out.append(f"  outcome  {t['outcome']} · {len(t['steps'])} steps · {total:,} tok · {t['seconds']}s")
+    out.append(f"  outcome  {t['outcome']} · {len(t['steps'])} steps · {total:,} tok · "
+               f"${t.get('cost_usd', 0):.4f} · {t['seconds']}s")
     return "\n".join(out)

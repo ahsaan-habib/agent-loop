@@ -23,7 +23,7 @@ def main() -> None:
     if args.cmd == "run":
         trace = run(args.goal, Registry(search_docs, lookup_order), max_steps=args.max_steps)
         print(trace.answer)
-        print(f"\n[{trace.outcome} · {len(trace.steps)} steps · {trace.tokens:,} tok · run {trace.run_id}]")
+        print(f"\n[{trace.outcome} · {len(trace.steps)} steps · {trace.tokens:,} tok · ${trace.cost_usd:.4f} · run {trace.run_id}]")
     else:
         path = RUNS / f"{args.run_id}.json" if args.run_id else max(RUNS.glob("*.json"), key=lambda p: p.stat().st_mtime)
         print(render(Path(path)))
