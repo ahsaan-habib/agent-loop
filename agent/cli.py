@@ -5,9 +5,17 @@ from pathlib import Path
 
 from .loop import run
 from .toolbox.docs import search_docs
-from .toolbox.orders import lookup_order
+from .toolbox.orders import add_note, issue_refund, lookup_order
 from .tools import Registry
 from .trace import RUNS, render
+
+
+def ask_human(name: str, arguments: dict) -> bool:
+    print(f"\n  ⚠ the agent wants to call {name}({', '.join(f'{k}={v!r}' for k, v in arguments.items())})")
+    try:
+        return input("  allow? [y/N] ").strip().lower() == "y"
+    except EOFError:      # non-interactive: irreversible actions are declined
+        return False
 
 
 def main() -> None:
@@ -21,7 +29,8 @@ def main() -> None:
     args = ap.parse_args()
 
     if args.cmd == "run":
-        trace = run(args.goal, Registry(search_docs, lookup_order), max_steps=args.max_steps)
+        tools = Registry(search_docs, lookup_order, add_note, issue_refund, approve=ask_human)
+        trace = run(args.goal, tools, max_steps=args.max_steps)
         print(trace.answer)
         print(f"\n[{trace.outcome} · {len(trace.steps)} steps · {trace.tokens:,} tok · ${trace.cost_usd:.4f} · run {trace.run_id}]")
     else:

@@ -46,11 +46,26 @@ def _parse_doc(doc: str) -> tuple[str, dict[str, str]]:
     return " ".join(desc.split()), params
 
 
+# Consequence classes, fixed at registration:
+#   read              search, fetch, look up         free to call, inside the budget
+#   write_reversible  draft, tag, add a note         allowed, logged, undoable
+#   write_irreversible send, refund, delete          a human confirms. Always.
+# No "auto-approve above 0.9 confidence": a model's stated confidence is a
+# token sequence, not a calibrated probability.
+Consequence = Literal["read", "write_reversible", "write_irreversible"]
+Approver = Callable[[str, dict], bool]
+
+
+def deny_all(name: str, arguments: dict) -> bool:
+    return False
+
+
 @dataclass
 class Tool:
     name: str
     fn: Callable[..., Any]
     schema: dict
+    consequence: Consequence = "read"
 
     def __post_init__(self):
         self._validated = validate_call(self.fn)
@@ -67,7 +82,13 @@ class Tool:
             return {"error": f"{self.name} failed: {type(e).__name__}: {e}"}
 
 
-def tool(fn: Callable[..., Any]) -> Tool:
+def tool(fn: Callable[..., Any] | None = None, *, consequence: Consequence = "read"):
+    if fn is None:
+        return lambda f: _build(f, consequence)
+    return _build(fn, consequence)
+
+
+def _build(fn: Callable[..., Any], consequence: Consequence) -> Tool:
     hints = typing.get_type_hints(fn)
     desc, param_docs = _parse_doc(fn.__doc__)
     props, required = {}, []
@@ -78,12 +99,15 @@ def tool(fn: Callable[..., Any]) -> Tool:
     schema = {"type": "function", "function": {
         "name": fn.__name__, "description": desc,
         "parameters": {"type": "object", "properties": props, "required": required}}}
-    return Tool(fn.__name__, fn, schema)
+    if consequence == "write_irreversible":
+        schema["function"]["description"] += " Requires human confirmation; may be declined."
+    return Tool(fn.__name__, fn, schema, consequence)
 
 
 class Registry:
-    def __init__(self, *tools: Tool):
+    def __init__(self, *tools: Tool, approve: Approver = deny_all):
         self.tools = {t.name: t for t in tools}
+        self.approve = approve
 
     def schemas(self) -> list[dict]:
         return [t.schema for t in self.tools.values()]
@@ -92,4 +116,8 @@ class Registry:
         tool = self.tools.get(name)
         if tool is None:   # tool hallucination: allowlist, answered as an observation
             return {"error": f"there is no tool called {name!r}. Available: {', '.join(self.tools)}"}
+        if tool.consequence == "write_irreversible" and not self.approve(name, arguments):
+            # a refusal the model can read is one it can recover from
+            return {"declined": f"A human reviewed this {name} call and declined it. "
+                                "Do not retry it; tell the user it needs manual handling."}
         return tool(**arguments)

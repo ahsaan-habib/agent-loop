@@ -10,7 +10,11 @@ from .model import Model
 from .tools import Registry
 from .trace import RunTrace, Step, summarise_observation
 
-SYSTEM = {"role": "system", "content": "You are a helpful assistant. Use tools when you need information."}
+SYSTEM = {"role": "system", "content": (
+    "You are a support agent for a SaaS product built on Laravel and Filament. "
+    "Use tools to look things up rather than guessing. Answer as soon as you have "
+    "enough; if the tools don't have the answer, say so plainly. Never claim an "
+    "action happened unless the tool result confirms it.")}
 
 
 def serialise(result) -> str:
