@@ -43,7 +43,7 @@ def main() -> None:
     r = sub.add_parser("run")
     r.add_argument("goal")
     r.add_argument("--max-steps", type=int, default=8)
-    st = sub.add_parser("stats", help="termination reasons across runs/")
+    sub.add_parser("stats", help="termination reasons across runs/")
     t = sub.add_parser("trace")
     t.add_argument("run_id", nargs="?", help="default: latest run")
     args = ap.parse_args()
