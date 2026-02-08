@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 import httpx
 
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
-MODEL = os.environ.get("AGENT_MODEL", "qwen3:4b")
+MODEL = os.environ.get("AGENT_MODEL", "qwen3:4b-instruct")
 
 
 @dataclass

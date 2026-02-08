@@ -1,7 +1,7 @@
 # agent-loop
 
 An agent is a loop. This is that loop written by hand — no framework — on a
-local model (`qwen3:4b` via Ollama's native tool calling), with a guardrail on
+local model (`qwen3:4b-instruct` via Ollama's native tool calling), with a guardrail on
 every line that has ever gone wrong.
 
 ```python
