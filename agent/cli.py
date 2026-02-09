@@ -56,7 +56,10 @@ def main() -> None:
     elif args.cmd == "stats":
         stats()
     else:
-        path = RUNS / f"{args.run_id}.json" if args.run_id else max(RUNS.glob("*.json"), key=lambda p: p.stat().st_mtime)
+        runs = list(RUNS.glob("*.json"))
+        if not args.run_id and not runs:
+            raise SystemExit("no runs yet")
+        path = RUNS / f"{args.run_id}.json" if args.run_id else max(runs, key=lambda p: p.stat().st_mtime)
         print(render(Path(path)))
 
 
