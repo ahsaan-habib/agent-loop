@@ -5,3 +5,4 @@ __pycache__/
 *.egg-info/
 runs/
 outbox/
+.pytest_cache/

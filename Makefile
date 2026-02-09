@@ -1,4 +1,4 @@
-.PHONY: install model
+.PHONY: install model test
 install:
 	python -m venv .venv && .venv/bin/pip install -e '.[docs]'
 model:

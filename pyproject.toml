@@ -16,7 +16,11 @@ build-backend = "setuptools.build_meta"
 include = ["agent*"]
 
 [project.optional-dependencies]
+test = ["pytest>=8"]
 docs = ["rag-grounded @ git+https://github.com/ahsaan-habib/rag-grounded.git"]
 
 [project.scripts]
 agent = "agent.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
